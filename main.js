@@ -1,5 +1,6 @@
 function main() {
   request()
+  requestAnimationFrame(main)
 }
 
 function filterData(arr) {
@@ -8,14 +9,41 @@ function filterData(arr) {
   })
 }
 
+function formatTime(timeArr){
+  return timeArr.map(item => item.split(' ')[1])
+}
+
+function findDate(timeArray) {
+  var start = timeArray.findIndex(element => element >= '11:30:00')
+  var end = timeArray.findIndex(element => element > '13:00:00')
+  return {start,end}
+}
+
+
 function draw(data) {
-  console.log(data.time)
-  console.log(data.jzzf)
+  let timeXAxis = formatTime(filterData(data.time))
+  let aliggzf = filterData(data.aliggzf).map(item => item.replace('%',''))
+  let jzzf = filterData(data.jzzf).map(item => item.replace('%',''))
+  let aliggtl = filterData(data.aliggtl).map(item => item.replace('%',''))
+  const {start,end} = findDate(timeXAxis)
+  if(start >0 && end < 0){
+  //  已经到中午11:30:00 还没有到下午13:00:00
+    timeXAxis = timeXAxis.slice(0,start)
+    aliggzf = aliggzf.slice(0,start)
+    jzzf = jzzf.slice(0,start)
+    aliggtl = aliggtl.slice(0,start)
+  } else if (start > 0 && end > 0) {
+  //  已经到了13:00:00
+    timeXAxis = timeXAxis.slice(0,start).concat(timeXAxis.slice(end,timeXAxis.length))
+    aliggzf = aliggzf.slice(0,start).concat(aliggzf.slice(end,aliggzf.length))
+    jzzf = jzzf.slice(0,start).concat(jzzf.slice(end,jzzf.length))
+    aliggtl = jzzf.slice(0,start).concat(aliggtl.slice(end,aliggtl.length))
+  }
   var myChart = echarts.init(document.getElementById('main'))
   var option = {
     xAxis: {
       type: 'category',
-      data: filterData(data.time.map(item => item.split(' ')[1]))
+      data: timeXAxis
     },
     yAxis: [
       {
@@ -27,16 +55,23 @@ function draw(data) {
       trigger: 'axis'
     },
     legend:{
-      data: ['阿里港股涨幅','盘内涨幅']
+      data: ['阿里港股涨幅','盘内涨幅','阿里港股套利']
     },
     series: [{
-      data: filterData(data.aliggzf.map(item => item.replace('%',''))),
+      data: aliggzf,
       type: 'line',
       name: '阿里港股涨幅',
+      symbol: 'none',
     }, {
-      data: filterData(data.jzzf.map(item => item.replace('%',''))),
+      data: jzzf,
       type: 'line',
       name: '盘内涨幅',
+      symbol: 'none'
+    },{
+      data: aliggtl,
+      type: 'line',
+      name: '阿里港股套利',
+      symbol: 'none'
     }
       // ,{
       //   data: [10, 20, 24, 28, -15, 17, 20],
