@@ -1,6 +1,5 @@
 function main() {
   request()
-  requestAnimationFrame(main)
 }
 
 function filterData(arr) {
@@ -89,20 +88,26 @@ function draw(data) {
     ]
   };
   myChart.setOption(option)
+  setTimeout(()=>{
+    main()
+  },3*1e3)
 }
 
 function request() {
   var httpRequest = new XMLHttpRequest()
   httpRequest.onreadystatechange = function(){
+    var that = this
     if(this.readyState === 4 && this.status === 200) {
       const myObj = JSON.parse(this.responseText)
       console.log(myObj)
       draw(myObj)
+    }else if (this.status !== 200 && this.status > 0){
+      console.error(that)
     }
   }
   const requestDate = new Date()
-  // const requestUrl = `result_zz_${requestDate.getFullYear()}-${(requestDate.getMonth()+1)<10?'0'+(requestDate.getMonth()+1):requestDate.getMonth()+1}-${requestDate.getDate()}.json`
-  const requestUrl = `result_zz_2021-03-24.json`
+  const requestUrl = `result_zz_${requestDate.getFullYear()}-${(requestDate.getMonth()+1)<10?'0'+(requestDate.getMonth()+1):requestDate.getMonth()+1}-${requestDate.getDate()}.json`
+  // const requestUrl = `result_zz_2021-03-24.json`
   httpRequest.open("GET",requestUrl,true)
   httpRequest.send()
 }
